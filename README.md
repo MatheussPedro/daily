@@ -14,6 +14,10 @@ Sendo desenvolvido com uma **arquitetura cliente-servidor**
 
 ### 📦 Bibliotecas e Dependências Principais (Frontend - React Native)
 
+```bash
+npx expo start
+```
+
 * **Navegação:**
     * `@react-navigation/native`
     * `@react-navigation/native-stack`
@@ -44,3 +48,26 @@ Sendo desenvolvido com uma **arquitetura cliente-servidor**
     * `react-hook-form` simplifica o gerenciamento de formulários, enquanto `yup` fornece validação de esquema poderosa para as entradas do seu formulário, garantindo a integridade dos dados.
 
 
+### Bibliotecas e Dependências Principais (Backend - Node.js com Express)
+
+- `express` - Framework para criação de APIs REST
+- `cors` - Middleware para habilitar requisições cross-origin do app móvel
+- `dotenv` - Para carregar variáveis de ambiente do arquivo `.env`
+- `mysql2` - Driver para conexão com MySQL
+
+## Configuração do `.env`
+
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=secret
+DB_NAME=daily
+
+
+## Como Rodar o Backend
+
+1. Instalar dependências:
+
+```bash
+npm run dev
+```
