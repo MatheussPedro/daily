@@ -19,8 +19,9 @@ npx expo start
 ```
 
 * **Navegação:**
-    * `@react-navigation/native`
-    * `@react-navigation/native-stack`
+    <!-- * `@react-navigation/native`
+    * `@react-navigation/native-stack` -->
+    * `expo-router`
     * Essas são cruciais para gerenciar transições de tela e fluxos de navegação dentro da sua aplicação móvel.
 
 * **UI e Gestos:**
@@ -54,6 +55,9 @@ npx expo start
 - `cors` - Middleware para habilitar requisições cross-origin do app móvel
 - `dotenv` - Para carregar variáveis de ambiente do arquivo `.env`
 - `mysql2` - Driver para conexão com MySQL
+- `prisma` -  Facilita bastante o mapeamento de dados e a manutenção do banco
+    Inicar prisma *npx prisma init*
+    Criar migration novo com o prisma *npx prisma migrate dev --name init*
 
 ## Configuração do `.env`
 
@@ -65,8 +69,6 @@ DB_NAME=daily
 
 
 ## Como Rodar o Backend
-
-1. Instalar dependências:
 
 ```bash
 npm run dev

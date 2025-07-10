@@ -20,10 +20,10 @@ export default function clientRegister() {
         return;
     }
 
-    // if(!nome || !email || !pass || !passConfirm){
-    //     alert('Preencha todos os campos obrigatórios');
-    //     return;
-    // }
+    if(!nome || !email || !pass || !passConfirm){
+     alert('Preencha todos os campos obrigatórios');
+       return;
+    }
 
     setData({ nome, email, pass, tipo: 'cliente' });
     router.push('/register/client/clientAddres');

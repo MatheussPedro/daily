@@ -32,23 +32,40 @@ const [fontsLoaded] = useFonts({
   if (!fontsLoaded) return null;
 
 
-  const handleFinish = () => {
-    // if (!cep || !rua || !numero || !bairro || !cidade || !uf) {
-    //   alert('Preencha todos os campos obrigatórios');
-    //   return;
-    // }
+const handleFinish = async () => {
+  if (!cep || !rua || !numero || !bairro || !cidade || !uf) {
+    alert('Preencha todos os campos obrigatórios');
+    return;
+  }
 
-    setData({
-      endereco: `${rua}, ${numero} - ${bairro}, ${cidade} - ${uf}, ${cep}`,
-    });
+  const endereco = { rua, numero, bairro, cidade, uf, cep };
 
-    // Aqui você pode chamar a API ou ir para a tela de confirmação
-    console.log('Cadastro completo:', data);
-    alert('Cadastro salvo!');
-    router.push('/(auth)/welcome');
+  const dadosCompletos = {
+    ...data,
+    endereco,
   };
 
+  try {
+    const res = await fetch('http://localhost:3000/clientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dadosCompletos),
+    });
 
+    if (!res.ok) {
+      throw new Error('Erro ao salvar no banco');
+    }
+
+    const resposta = await res.json();
+    console.log('Resposta da API:', resposta);
+
+    alert('Cadastro salvo com sucesso!');
+    router.push('/(auth)/welcome');
+  } catch (error) {
+    console.error('Erro ao enviar dados:', error);
+    alert('Erro ao salvar. Tente novamente.');
+  }
+};
 
   return (
     <View style={styles.container}>
