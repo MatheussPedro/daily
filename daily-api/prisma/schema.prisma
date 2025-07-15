@@ -14,13 +14,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Cliente {
+model User {
   id        Int        @id @default(autoincrement())
   nome      String
-  email     String
+  email     String     @unique
   senha     String
+
+  cliente   Cliente
+}
+
+model Cliente {
+  id        Int      @id @default(autoincrement())
   tipo      String
-  endereco  Endereco?
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  endereco  Endereco
 }
 
 model Endereco {
@@ -31,6 +39,7 @@ model Endereco {
   cidade     String
   uf         String
   cep        String
-  clienteId  Int @unique
+
+  clienteId  Int      @unique
   cliente    Cliente  @relation(fields: [clienteId], references: [id])
 }

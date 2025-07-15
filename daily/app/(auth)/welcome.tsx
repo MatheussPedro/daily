@@ -37,7 +37,7 @@ export default function Welcome() {
 
       <TouchableOpacity
         style={[styles.button, styles.secondaryButton]}
-        onPress={() => router.push('/')}
+        onPress={() => router.push('/(auth)/register/diarist/diarist')}
       >
 
         <AppText weight='bold' size={18} style={styles.buttonText}>Sou Diarista</AppText>

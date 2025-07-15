@@ -29,6 +29,8 @@ npx expo start
     * `react-native-safe-area-context`
     * `react-native-gesture-handler`
     * `react-native-reanimated`
+    * `react-hook-form yup` para fazer formularios.
+
     * Essas bibliotecas aprimoram o desempenho da interface do usuário, gerenciam a renderização da tela, tratam áreas seguras e possibilitam interações complexas de gestos.
 
 * **Ícones:**

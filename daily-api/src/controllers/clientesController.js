@@ -1,4 +1,5 @@
 const { prisma } = require('../config/db.js');
+const bcrypt = require('bcrypt');
 
 const criarCliente = async (req, res) => {
   const { nome, email, pass, tipo, endereco } = req.body;
@@ -8,12 +9,18 @@ const criarCliente = async (req, res) => {
   }
 
   try {
-    const cliente = await prisma.Cliente.create({
+    const user = await prisma.user.create({
       data: {
         nome,
         email,
-        senha: pass,
+        senha: await bcrypt.hash(pass, 10),
+      },
+    });
+
+    const cliente = await prisma.cliente.create({
+      data: {
         tipo,
+        user: { connect: { id: user.id } },
         endereco: {
           create: {
             rua: endereco.rua,
@@ -27,13 +34,17 @@ const criarCliente = async (req, res) => {
       },
       include: {
         endereco: true,
+        user: true,
       },
     });
 
-    return res.status(201).json(cliente);
+    return res.status(201).json({ user, cliente });
   } catch (error) {
     console.error('Erro Prisma:', error);
-    return res.status(500).json({ error: 'Erro ao criar cliente', detalhes: error.message });
+    return res.status(500).json({
+      error: 'Erro ao criar cliente',
+      detalhes: error.message,
+    });
   }
 };
 
