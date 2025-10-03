@@ -1,112 +1,102 @@
-import { TextInput, TouchableOpacity, Text, View, StyleSheet, Image } from 'react-native';
-import { useState } from 'react';
+import { View, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useCadastro } from '@/context/CadastroContext';
 import { AppText } from '@/components/text/appText';
+import { useCadastro } from '@/context/CadastroContext';
+import { useState } from 'react';
+import { FormRegisterAndLogin } from '@/app/styles/FormRegisterAndLogin';
+import {
+  useFonts,
+  Montserrat_400Regular,
+  Montserrat_600SemiBold,
+  Montserrat_700Bold,
+} from '@expo-google-fonts/montserrat';
+
+export default function ClientAddres() {
+  
+  const router = useRouter();
+  const { data, setData } = useCadastro();
+
+  const [cep, setCep] = useState('');
+  const [rua, setRua] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
+
+// console.log("Dados recebidos: ", data);
+
+const [fontsLoaded] = useFonts({
+    Montserrat_400Regular,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+  });
+
+  if (!fontsLoaded) return null;
 
 
-export default function clientRegister() {
-    const [nome, setNome] = useState('');
-    const [email, setEmail] = useState('');
-    const [pass, setPass] = useState('');
-    const [passConfirm, setPassConfirm] = useState('');
-    const { setData } = useCadastro();
-    const router = useRouter();
+const handleFinish = async () => {
+  if (!cep || !rua || !numero || !bairro || !cidade || !uf) {
+    alert('Preencha todos os campos obrigatórios');
+    return;
+  }
 
+  const endereco = { rua, numero, bairro, cidade, uf, cep };
 
-    const handleNextStep = () => {
-    if (pass !== passConfirm) {
-        alert('As senhas não coincidem!');
-        return;
+  const dadosCompletos = {
+    ...data,
+    endereco,
+  };
+
+  try {
+    const res = await fetch('http://localhost:3000/clientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dadosCompletos),
+    });
+
+    if (!res.ok) {
+      throw new Error('Erro ao salvar no banco');
     }
 
-    if(!nome || !email || !pass || !passConfirm){
-     alert('Preencha todos os campos obrigatórios');
-       return;
-    }
+    const resposta = await res.json();
+    console.log('Resposta da API:', resposta);
 
-    setData({ nome, email, pass, tipo: 'cliente' });
-    router.push('/register/client/clientAddres');
-    };
+    alert('Cadastro salvo com sucesso!');
+    router.push('/(auth)/welcome');
+  } catch (error) {
+    console.error('Erro ao enviar dados:', error);
+    alert('Erro ao salvar. Tente novamente.');
+  }
+};
 
-    return (
-        <View style={styles.container}>
-            <AppText weight='semi' size={18} style={styles.subtitle}>
-                Preencha seus dados para criar sua conta de Cliente
-            </AppText>
+  return (
+        <KeyboardAvoidingView
+      style={FormRegisterAndLogin.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
 
-        <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} placeholderTextColor="#888" />
-        <TextInput style={styles.input} placeholder="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholderTextColor="#888" />
-        <TextInput style={styles.input} placeholder="Senha" value={pass} onChangeText={setPass} secureTextEntry placeholderTextColor="#888" />
-        <TextInput style={styles.input} placeholder="Confirme Sua Senha" value={passConfirm} onChangeText={setPassConfirm} secureTextEntry placeholderTextColor="#888" />
+  <ScrollView
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+      keyboardShouldPersistTaps="handled"
+  >
+      <View>
+      <AppText size={18} weight="bold" style={FormRegisterAndLogin.subtitle}>
+        Agora preciso que você preencha seus dados de endereço
+      </AppText>
 
-            <TouchableOpacity
-            style={styles.button}
-            onPress={handleNextStep}
-            >
-            <AppText weight="bold" size={16} color="#fff">
-                Próximo
-            </AppText>
-            </TouchableOpacity>
+      <TextInput style={FormRegisterAndLogin.input} placeholder="CEP" value={cep} onChangeText={setCep} placeholderTextColor="#888" />
+      <TextInput style={FormRegisterAndLogin.input} placeholder="Rua" value={rua} onChangeText={setRua} placeholderTextColor="#888" />
+      <TextInput style={FormRegisterAndLogin.input} placeholder="Número" value={numero} onChangeText={setNumero} placeholderTextColor="#888" />
+      <TextInput style={FormRegisterAndLogin.input} placeholder="Bairro" value={bairro} onChangeText={setBairro} placeholderTextColor="#888" />
+      <TextInput style={FormRegisterAndLogin.input} placeholder="Cidade" value={cidade} onChangeText={setCidade} placeholderTextColor="#888" />
+      <TextInput style={FormRegisterAndLogin.input} placeholder="UF" value={uf} onChangeText={setUf} maxLength={2} placeholderTextColor="#888" />
 
-            <TouchableOpacity onPress={() => router.push('/(auth)/welcome')}>
-                <Text style={styles.loginLink}>Voltar para o início</Text>
-            </TouchableOpacity>
-        </View>
-    );
+      <TouchableOpacity style={FormRegisterAndLogin.button} onPress={handleFinish}>
+        <AppText weight="bold" size={16} color="#fff">Concluir cadastro</AppText>
+      </TouchableOpacity>
+      </View>
+    </ScrollView>
+  </KeyboardAvoidingView>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-    },
-    logo: {
-        width: 120,
-        height: 120,
-        marginBottom: 16,
-    },
-    subtitle: {
-        marginBottom: 32,
-        marginTop: 8,
-        textAlign: 'center',
-    },
-    subtitle2: {
-        marginTop: 16,
-        textAlign: 'center',
-    },
-    input: {
-        width: '100%',
-        height: 48,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        marginBottom: 16,
-        fontSize: 16,
-        backgroundColor: '#f6f6f6',
-        color: '#222',
-    },
-    button: {
-        width: '100%',
-        backgroundColor: '#2a9d8f',
-        padding: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginBottom: 16,
-        marginTop: 8,
-    },
-    buttonText: {
-        color: '#fff',
-    },
-    loginLink: {
-        marginTop: 8,
-        color: '#666',
-        textDecorationLine: 'underline',
-        fontFamily: 'Montserrat_400Regular',
-        fontSize: 16,
-    },
-});

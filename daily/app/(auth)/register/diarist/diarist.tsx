@@ -1,60 +1,60 @@
-import { TextInput, TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { TextInput, TouchableOpacity, Text, View, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'expo-router';
 import { useCadastro } from '@/context/CadastroContext';
 import { AppText } from '@/components/text/appText';
+import { FormRegisterAndLogin } from '@/app/styles/FormRegisterAndLogin';
 
 const schema = yup.object().shape({
-    nome: yup.string().required('Nome é obrigatório'),
-    email: yup
-        .string()
-        .required('O e-mail é obrigatório')
-        .email('Digite um e-mail válido com @'),
-    pass: yup.string().min(6, 'A senha deve ter no mínimo 6 caracteres').required('Senha é obrigatória'),
-    passConfirm: yup
-        .string()
-        .oneOf([yup.ref('pass')], 'As senhas não coincidem')
-        .required('Confirmação de senha é obrigatória')
-}).required();
+  cpf: yup.string().required('CPF é obrigatório'),
+  servico: yup.string().required('Selecione ao menos um tipo de serviço'),
+  observacao: yup.string().required('Conte um pouco sobre você'),
+  telefone: yup.string().required('Telefone é obrigatório'),
+//   cidade: yup.string().required('Cidade é obrigatória'),
+//   disponibilidade: yup.string().required('Informe sua disponibilidade'),
+  precoHora: yup.number().required('Informe um valor por hora'),
+  experiencia: yup.number().min(0, 'Mínimo 0 anos').required('Informe sua experiência'),
+}).required(); //<-- caso queira testar mais rapido basta remover a chamada dessa função required();
 
-export default function DiaristRegister() {
+export default function dailyComplement(){
+
+    const router = useRouter();
+    const { setData } = useCadastro();
+
+    const onSubmit = (formData: any) => {
+        setData(formData);
+        router.push('/');
+    };
+
     const { control, handleSubmit, formState: { errors } } = useForm({
-        resolver: yupResolver(schema),
+    resolver: yupResolver(schema),
     });
 
-    const { setData } = useCadastro();
-    const router = useRouter();
-
-    const onSubmit = (data: any) => {
-    setData({ nome: data.nome, email: data.email, pass: data.pass, tipo: 'diarista' });
-    router.push('/(auth)/register/diarist/diaristComplement');
-  };
-
-    return (
-    <View style={styles.container}>
-      <AppText weight='semi' size={18} style={styles.subtitle}>
+return (
+  <KeyboardAvoidingView
+      style={FormRegisterAndLogin.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={FormRegisterAndLogin.container}>
+      <AppText weight='semi' size={18} style={FormRegisterAndLogin.subtitle}>
         Preencha seus dados para criar sua conta de Diarista
       </AppText>
-       {/* O <Controller> do react-hook-form serve como ponte entre os componentes de input controlados (como o TextInput do React Native) e o gerenciamento de estado e validação do formulário feito pelo react-hook-form. */}
 
-      {/* control={control}: passa o objeto control que vem do useForm() — ele gerencia os campos do formulário.
-
-        name="nome": nome do campo dentro do formulário.
-        render: é a função que retorna o input real.
-        onChange: função que atualiza o valor do campo.
-        value: valor atual do campo (vem do form).
-        Ambos são conectados automaticamente ao estado interno do react-hook-form. */}
-
-    {errors.nome && <Text style={styles.error}>{errors.nome.message}</Text>}
+    {errors.cpf && <Text style={FormRegisterAndLogin.error}>{errors.cpf.message}</Text>}
       <Controller
         control={control}
-        name="nome"
+        name="cpf"
         render={({ field: { onChange, value } }) => (
           <TextInput
-            style={styles.input}
-            placeholder="Nome"
+            style={FormRegisterAndLogin.input}
+            placeholder="CPF"
             value={value}
             onChangeText={onChange}
             placeholderTextColor="#888"
@@ -62,110 +62,129 @@ export default function DiaristRegister() {
         )}
       />
 
-    {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
-    <Controller
-    control={control}
-    name="email"
-    render={({ field: { onChange, value } }) => (
-        <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={value}
-        onChangeText={onChange}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        placeholderTextColor="#888"
-        />
-    )}
+    {errors.telefone && <Text style={FormRegisterAndLogin.error}>{errors.telefone.message}</Text>}
+      <Controller
+        control={control}
+        name="telefone"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={FormRegisterAndLogin.input}
+            placeholder="Telefone"
+            value={value}
+            onChangeText={onChange}
+            keyboardType="phone-pad"
+            placeholderTextColor="#888"
+          />
+        )}
+      />
+
+      {/* <Controller
+        control={control}
+        name="cidade"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={styles.input}
+            placeholder="Cidade"
+            value={value}
+            onChangeText={onChange}
+            placeholderTextColor="#888"
+          />
+        )}
+      />
+      {errors.cidade && <Text style={styles.error}>{errors.cidade.message}</Text>} */}
+
+    {errors.servico && <Text style={FormRegisterAndLogin.error}>{errors.servico.message}</Text>}
+      <Controller
+        control={control}
+        name="servico"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={FormRegisterAndLogin.input}
+            placeholder="Tipo de serviço (ex: Limpeza, Passar Roupa)"
+            value={value}
+            onChangeText={onChange}
+            placeholderTextColor="#888"
+          />
+        )}
+      />
+
+{errors.precoHora && <Text style={FormRegisterAndLogin.error}>{errors.precoHora.message}</Text>}
+<Controller
+  control={control}
+  name="precoHora"
+  render={({ field: { onChange, value } }) => (
+    <TextInput
+      style={FormRegisterAndLogin.input}
+      placeholder="Preço por hora (R$)"
+      value={value !== undefined && !isNaN(value) ? String(value) : ''}
+      onChangeText={(text) => {
+        const numericValue = text.replace(',', '.'); // Aceita vírgula como separador
+        onChange(numericValue === '' ? '' : Number(numericValue));
+      }}
+      keyboardType="numeric"
+      placeholderTextColor="#888"
     />
+  )}
+/>
 
-    {errors.pass && <Text style={styles.error}>{errors.pass.message}</Text>}
-      <Controller
+{errors.experiencia && <Text style={FormRegisterAndLogin.error}>{errors.experiencia.message}</Text>}
+<Controller
+  control={control}
+  name="experiencia"
+  render={({ field: { onChange, value } }) => (
+    <TextInput
+      style={FormRegisterAndLogin.input}
+      placeholder="Anos de experiência"
+      value={value !== undefined && !isNaN(value) ? String(value) : ''}
+      onChangeText={(text) => {
+        const parsed = parseInt(text, 10);
+        onChange(isNaN(parsed) ? '' : parsed);
+      }}
+      keyboardType="numeric"
+      placeholderTextColor="#888"
+    />
+  )}
+/>
+
+      {/* <Controller
         control={control}
-        name="pass"
+        name="disponibilidade"
         render={({ field: { onChange, value } }) => (
           <TextInput
             style={styles.input}
-            placeholder="Senha"
+            placeholder="Disponibilidade (ex: Seg-Sex, fins de semana...)"
             value={value}
             onChangeText={onChange}
-            secureTextEntry
+            placeholderTextColor="#888"
+          />
+        )}
+      />
+      {errors.disponibilidade && <Text style={styles.error}>{errors.disponibilidade.message}</Text>} */}
+
+    {errors.observacao && <Text style={FormRegisterAndLogin.error}>{errors.observacao.message}</Text>}
+      <Controller
+        control={control}
+        name="observacao"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[FormRegisterAndLogin.input, { height: 80 }]}
+            placeholder="Conte um pouco sobre você"
+            value={value}
+            onChangeText={onChange}
+            multiline
+            numberOfLines={4}
             placeholderTextColor="#888"
           />
         )}
       />
 
-      {errors.passConfirm && <Text style={styles.error}>{errors.passConfirm.message}</Text>}
-      <Controller
-        control={control}
-        name="passConfirm"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={styles.input}
-            placeholder="Confirme Sua Senha"
-            value={value}
-            onChangeText={onChange}
-            secureTextEntry
-            placeholderTextColor="#888"
-          />
-        )}
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+      <TouchableOpacity style={FormRegisterAndLogin.button} onPress={handleSubmit(onSubmit)}>
         <AppText weight="bold" size={16} color="#fff">
-          Próximo
+          Finalizar
         </AppText>
       </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.push('/(auth)/welcome')}>
-        <Text style={styles.loginLink}>Voltar para o início</Text>
-      </TouchableOpacity>
-    </View>
-    )
+      </View>
+    </ScrollView>
+  </KeyboardAvoidingView>
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  subtitle: {
-    marginBottom: 32,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  input: {
-    width: '100%',
-    height: 48,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: '#f6f6f6',
-    color: '#222',
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#2a9d8f',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 16,
-    marginTop: 8,
-  },
-  loginLink: {
-    marginTop: 8,
-    color: '#666',
-    textDecorationLine: 'underline',
-    fontFamily: 'Montserrat_400Regular',
-    fontSize: 16,
-  },
-  error: {
-    
-  }
-});
