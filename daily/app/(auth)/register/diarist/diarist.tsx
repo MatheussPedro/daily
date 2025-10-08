@@ -5,18 +5,23 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'expo-router';
 import { useCadastro } from '@/context/CadastroContext';
 import { AppText } from '@/components/text/appText';
-import { FormRegisterAndLogin } from '@/app/styles/FormRegisterAndLogin';
+import { FormRegisterAndLogin } from '@/styles/FormRegisterAndLogin';
+
+
+const opcoesServico = [
+  'Limpeza',
+  'Passar Roupa',
+  'Cozinhar',
+];
 
 const schema = yup.object().shape({
   cpf: yup.string().required('CPF é obrigatório'),
-  servico: yup.string().required('Selecione ao menos um tipo de serviço'),
+  servico: yup.array().of(yup.string()).min(1, 'Selecione ao menos um tipo de serviço').required('Selecione ao menos um tipo de serviço'),
   observacao: yup.string().required('Conte um pouco sobre você'),
   telefone: yup.string().required('Telefone é obrigatório'),
-//   cidade: yup.string().required('Cidade é obrigatória'),
-//   disponibilidade: yup.string().required('Informe sua disponibilidade'),
   precoHora: yup.number().required('Informe um valor por hora'),
   experiencia: yup.number().min(0, 'Mínimo 0 anos').required('Informe sua experiência'),
-}).required(); //<-- caso queira testar mais rapido basta remover a chamada dessa função required();
+}).required();
 
 export default function dailyComplement(){
 
@@ -25,7 +30,7 @@ export default function dailyComplement(){
 
     const onSubmit = (formData: any) => {
         setData(formData);
-        router.push('/');
+        router.push('/(auth)/register/diarist/diaristComplement');
     };
 
     const { control, handleSubmit, formState: { errors } } = useForm({
@@ -40,6 +45,8 @@ return (
     >
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
       <View style={FormRegisterAndLogin.container}>
@@ -94,19 +101,39 @@ return (
       {errors.cidade && <Text style={styles.error}>{errors.cidade.message}</Text>} */}
 
     {errors.servico && <Text style={FormRegisterAndLogin.error}>{errors.servico.message}</Text>}
-      <Controller
-        control={control}
-        name="servico"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={FormRegisterAndLogin.input}
-            placeholder="Tipo de serviço (ex: Limpeza, Passar Roupa)"
-            value={value}
-            onChangeText={onChange}
-            placeholderTextColor="#888"
-          />
-        )}
-      />
+<Controller
+  control={control}
+  name="servico"
+  render={({ field: { onChange, value = [] } }) => (
+    <View style={FormRegisterAndLogin.checkboxContainer}>
+      <Text style={FormRegisterAndLogin.checkboxLabel}>
+        Selecione os serviços que você presta:
+      </Text>
+
+      {opcoesServico.map((opcao) => (
+        <TouchableOpacity
+          key={opcao}
+          style={FormRegisterAndLogin.checkboxOption}
+          onPress={() => {
+            if (value.includes(opcao)) {
+              onChange(value.filter((v) => v !== opcao));
+            } else {
+              onChange([...value, opcao]);
+            }
+          }}
+        >
+          <Text style={[
+            FormRegisterAndLogin.checkboxIcon,
+            { color: value.includes(opcao) ? '#2a9d8f' : '#888' }
+          ]}>
+            {value.includes(opcao) ? '☑' : '☐'}
+          </Text>
+          <Text style={FormRegisterAndLogin.checkboxText}>{opcao}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  )}
+/>
 
 {errors.precoHora && <Text style={FormRegisterAndLogin.error}>{errors.precoHora.message}</Text>}
 <Controller
@@ -161,7 +188,7 @@ return (
       />
       {errors.disponibilidade && <Text style={styles.error}>{errors.disponibilidade.message}</Text>} */}
 
-    {errors.observacao && <Text style={FormRegisterAndLogin.error}>{errors.observacao.message}</Text>}
+    {errors.observacao && <Text style={FormRegisterAndLogin.error}></Text>}
       <Controller
         control={control}
         name="observacao"
