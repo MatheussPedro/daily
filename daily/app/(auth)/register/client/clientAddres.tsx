@@ -1,121 +1,186 @@
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  Text,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppText } from '@/components/text/appText';
-import { useCadastro } from '@/context/CadastroContext';
-import { useState } from 'react';
-import {
-  useFonts,
-  Montserrat_400Regular,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-} from '@expo-google-fonts/montserrat';
+import * as yup from 'yup';
+import { FormRegisterAndLogin } from '../../styles/FormRegisterAndLogin';
+import { useRegister } from '@/context/ClienteRegisterContext';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+
+const schema = yup
+  .object()
+  .shape({
+    cep: yup.string().required('Informe seu CEP'),
+    rua: yup.string().required('Informe sua rua'),
+    numero: yup.string().required('Informe o número da casa'),
+    bairro: yup.string().required('Informe seu bairro'),
+    cidade: yup.string().required('Informe sua cidade'),
+    uf: yup.string().length(2, 'UF deve ter 2 letras').required('Informe o UF'),
+  })
+  .required();
 
 export default function ClientAddres() {
   const router = useRouter();
-  const { data, setData } = useCadastro();
+  const { formData, updateForm } = useRegister();
 
-  const [cep, setCep] = useState('');
-  const [rua, setRua] = useState('');
-  const [numero, setNumero] = useState('');
-  const [bairro, setBairro] = useState('');
-  const [cidade, setCidade] = useState('');
-  const [uf, setUf] = useState('');
-
-// console.log("Dados recebidos: ", data);
-
-const [fontsLoaded] = useFonts({
-    Montserrat_400Regular,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      cep: '',
+      rua: (formData as any)?.rua ?? '',
+      numero: (formData as any)?.numero ?? '',
+      bairro: (formData as any)?.bairro ?? '',
+      cidade: (formData as any)?.cidade ?? '',
+      uf: (formData as any)?.uf ?? '',
+    },
   });
 
-  if (!fontsLoaded) return null;
-
-
-const handleFinish = async () => {
-  if (!cep || !rua || !numero || !bairro || !cidade || !uf) {
-    alert('Preencha todos os campos obrigatórios');
-    return;
-  }
-
-  const endereco = { rua, numero, bairro, cidade, uf, cep };
-
-  const dadosCompletos = {
-    ...data,
-    endereco,
+  const onSubmit = (data: any) => {
+    const fullData = { ...formData, ...data };
+    updateForm(fullData);
+    console.log('Dados completos do cliente:', fullData);
+    router.push('/');
   };
 
-  try {
-    const res = await fetch('http://localhost:3000/clientes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dadosCompletos),
-    });
-
-    if (!res.ok) {
-      throw new Error('Erro ao salvar no banco');
-    }
-
-    const resposta = await res.json();
-    console.log('Resposta da API:', resposta);
-
-    alert('Cadastro salvo com sucesso!');
-    router.push('/(auth)/welcome');
-  } catch (error) {
-    console.error('Erro ao enviar dados:', error);
-    alert('Erro ao salvar. Tente novamente.');
-  }
-};
-
   return (
-    <View style={styles.container}>
-      <AppText size={18} weight="bold" style={styles.subtitle}>
-        Agora preciso que você preencha seus dados de endereço
-      </AppText>
+    <KeyboardAvoidingView
+      style={FormRegisterAndLogin.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={FormRegisterAndLogin.container}>
+          <AppText size={18} weight="bold" style={FormRegisterAndLogin.subtitle}>
+            Agora preciso que você preencha seus dados de endereço
+          </AppText>
 
-      <TextInput style={styles.input} placeholder="CEP" value={cep} onChangeText={setCep} placeholderTextColor="#888" />
-      <TextInput style={styles.input} placeholder="Rua" value={rua} onChangeText={setRua} placeholderTextColor="#888" />
-      <TextInput style={styles.input} placeholder="Número" value={numero} onChangeText={setNumero} placeholderTextColor="#888" />
-      <TextInput style={styles.input} placeholder="Bairro" value={bairro} onChangeText={setBairro} placeholderTextColor="#888" />
-      <TextInput style={styles.input} placeholder="Cidade" value={cidade} onChangeText={setCidade} placeholderTextColor="#888" />
-      <TextInput style={styles.input} placeholder="UF" value={uf} onChangeText={setUf} maxLength={2} placeholderTextColor="#888" />
+          {(errors.cep as any)?.message && (
+            <Text style={FormRegisterAndLogin.error}>{(errors.cep as any).message}</Text>
+          )}
+          <Controller
+            control={control}
+            name="cep"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="CEP"
+                value={value}
+                onChangeText={onChange}
+                keyboardType="number-pad"
+                placeholderTextColor="#888"
+              />
+            )}
+          />
 
-      <TouchableOpacity style={styles.button} onPress={handleFinish}>
-        <AppText weight="bold" size={16} color="#fff">Concluir cadastro</AppText>
-      </TouchableOpacity>
-    </View>
+          {(errors.rua as any)?.message && (
+            <Text style={FormRegisterAndLogin.error}>{(errors.rua as any).message}</Text>
+          )}
+          <Controller
+            control={control}
+            name="rua"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="Rua"
+                value={value}
+                onChangeText={onChange}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
+
+          {(errors.numero as any)?.message && (
+            <Text style={FormRegisterAndLogin.error}>{(errors.numero as any).message}</Text>
+          )}
+          <Controller
+            control={control}
+            name="numero"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="Número"
+                value={value}
+                onChangeText={onChange}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
+
+          {(errors.bairro as any)?.message && (
+            <Text style={FormRegisterAndLogin.error}>{(errors.bairro as any).message}</Text>
+          )}
+          <Controller
+            control={control}
+            name="bairro"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="Bairro"
+                value={value}
+                onChangeText={onChange}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
+
+          {(errors.cidade as any)?.message && (
+            <Text style={FormRegisterAndLogin.error}>{(errors.cidade as any).message}</Text>
+          )}
+          <Controller
+            control={control}
+            name="cidade"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="Cidade"
+                value={value}
+                onChangeText={onChange}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
+
+          {(errors.uf as any)?.message && (
+            <Text style={FormRegisterAndLogin.error}>{(errors.uf as any).message}</Text>
+          )}
+          <Controller
+            control={control}
+            name="uf"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="UF"
+                value={value}
+                onChangeText={(text) => onChange(text.toUpperCase())}
+                maxLength={2}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
+
+          <TouchableOpacity style={FormRegisterAndLogin.button} onPress={handleSubmit(onSubmit)}>
+            <AppText weight="bold" size={16} color="#fff">
+              Concluir cadastro
+            </AppText>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  subtitle: {
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  input: {
-    width: '100%',
-    height: 48,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: '#f6f6f6',
-    color: '#222',
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#2a9d8f',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-});
