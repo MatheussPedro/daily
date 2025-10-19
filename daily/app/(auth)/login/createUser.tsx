@@ -9,6 +9,9 @@ import { styles } from './styles/createUsersStyle';
 const schema = yup.object().shape({
   email: yup.string().required('Informe seu email'),
   pass: yup.string().required('Digite sua senha.'),
+  confirmpass: yup.string()
+    .required('Confirme sua senha')
+    .oneOf([yup.ref('pass')], 'As senhas devem ser iguais'),
 }).required();
 
 export default function Client() {
@@ -32,12 +35,12 @@ export default function Client() {
       >
         <View style={styles.header}>
           <Text style={styles.title}>Olá!</Text>
-          <Text style={styles.subtitle}>Bem Vindo De volta</Text>
+          <Text style={styles.subtitle}>Bem Vindo Ao App Daily</Text>
         </View>
 
         <View style={styles.formContainer}>
           <AppText weight="semi" size={18} style={styles.formTitle}>
-            Faça login
+            Crie sua conta
           </AppText>
 
           {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
@@ -73,15 +76,31 @@ export default function Client() {
             )}
           />
 
+          {errors.confirmpass && <Text style={styles.error}>{errors.confirmpass.message}</Text>}
+          <Controller
+            control={control}
+            name="confirmpass"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={styles.input}
+                placeholder="Confirme sua senha"
+                secureTextEntry
+                value={value}
+                onChangeText={onChange}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
+
           <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
             <AppText weight="bold" size={16} color="#fff">
-              Entrar
+              Cadastrar
             </AppText>
           </TouchableOpacity>
 
           <Text style={styles.bottomText}
-          onPress={() => router.push('/(auth)/login/createUser')}>
-            Ainda não tem uma conta? <Text style={styles.link}>Criar</Text>
+          onPress={() => router.push('/(auth)/login/login')}>
+            Já tem uma conta? <Text style={styles.link}>Entrar</Text>
           </Text>
         </View>
       </ScrollView>

@@ -1,3 +1,4 @@
+//possivelmente não vai ser mais usado
 import React, { createContext, useContext, useState } from 'react';
 
 interface CadastroData {

@@ -1,102 +1,159 @@
-import { View, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import React from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppText } from '@/components/text/appText';
-import { useCadastro } from '@/context/CadastroContext';
-import { useState } from 'react';
-import { FormRegisterAndLogin } from '@/app/styles/FormRegisterAndLogin';
-import {
-  useFonts,
-  Montserrat_400Regular,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-} from '@expo-google-fonts/montserrat';
+import * as yup from 'yup';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { FormRegisterAndLogin } from '../../styles/FormRegisterAndLogin';
+import { useRegister } from '@/context/ClienteRegisterContext';
+import { RadioButton } from 'react-native-paper';
 
-export default function ClientAddres() {
-  
+const schema = yup
+  .object()
+  .shape({
+    nome: yup.string().required('Informe seu nome'),
+    cpf: yup.string().required('Informe seu CPF'),
+    telefone: yup.string().required('Informe seu telefone'),
+    genero: yup.string().required('Informe seu gênero'),
+  })
+  .required();
+
+export default function Client() {
   const router = useRouter();
-  const { data, setData } = useCadastro();
+  const { updateForm } = useRegister();
 
-  const [cep, setCep] = useState('');
-  const [rua, setRua] = useState('');
-  const [numero, setNumero] = useState('');
-  const [bairro, setBairro] = useState('');
-  const [cidade, setCidade] = useState('');
-  const [uf, setUf] = useState('');
-
-// console.log("Dados recebidos: ", data);
-
-const [fontsLoaded] = useFonts({
-    Montserrat_400Regular,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      nome: '',
+      cpf: '',
+      telefone: '',
+      genero: '',
+    },
   });
 
-  if (!fontsLoaded) return null;
-
-
-const handleFinish = async () => {
-  if (!cep || !rua || !numero || !bairro || !cidade || !uf) {
-    alert('Preencha todos os campos obrigatórios');
-    return;
-  }
-
-  const endereco = { rua, numero, bairro, cidade, uf, cep };
-
-  const dadosCompletos = {
-    ...data,
-    endereco,
+  const onSubmit = (data: any) => {
+    updateForm(data);
+    console.log('Dados enviados:', data);
+    router.push('/(auth)/register/client/clientAddres');
   };
 
-  try {
-    const res = await fetch('http://localhost:3000/clientes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dadosCompletos),
-    });
-
-    if (!res.ok) {
-      throw new Error('Erro ao salvar no banco');
-    }
-
-    const resposta = await res.json();
-    console.log('Resposta da API:', resposta);
-
-    alert('Cadastro salvo com sucesso!');
-    router.push('/(auth)/welcome');
-  } catch (error) {
-    console.error('Erro ao enviar dados:', error);
-    alert('Erro ao salvar. Tente novamente.');
-  }
-};
-
   return (
-        <KeyboardAvoidingView
+    <KeyboardAvoidingView
       style={FormRegisterAndLogin.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          padding: 20,
+        }}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={FormRegisterAndLogin.container}>
+          <AppText weight="semi" size={18} style={FormRegisterAndLogin.subtitle}>
+            Dados pessoais
+          </AppText>
 
-  <ScrollView
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
-      keyboardShouldPersistTaps="handled"
-  >
-      <View>
-      <AppText size={18} weight="bold" style={FormRegisterAndLogin.subtitle}>
-        Agora preciso que você preencha seus dados de endereço
-      </AppText>
+          {errors.nome && <Text style={FormRegisterAndLogin.error}>{errors.nome.message}</Text>}
+          <Controller
+            control={control}
+            name="nome"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="Nome"
+                value={value}
+                onChangeText={onChange}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
 
-      <TextInput style={FormRegisterAndLogin.input} placeholder="CEP" value={cep} onChangeText={setCep} placeholderTextColor="#888" />
-      <TextInput style={FormRegisterAndLogin.input} placeholder="Rua" value={rua} onChangeText={setRua} placeholderTextColor="#888" />
-      <TextInput style={FormRegisterAndLogin.input} placeholder="Número" value={numero} onChangeText={setNumero} placeholderTextColor="#888" />
-      <TextInput style={FormRegisterAndLogin.input} placeholder="Bairro" value={bairro} onChangeText={setBairro} placeholderTextColor="#888" />
-      <TextInput style={FormRegisterAndLogin.input} placeholder="Cidade" value={cidade} onChangeText={setCidade} placeholderTextColor="#888" />
-      <TextInput style={FormRegisterAndLogin.input} placeholder="UF" value={uf} onChangeText={setUf} maxLength={2} placeholderTextColor="#888" />
+          {errors.cpf && <Text style={FormRegisterAndLogin.error}>{errors.cpf.message}</Text>}
+          <Controller
+            control={control}
+            name="cpf"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="CPF"
+                value={value}
+                onChangeText={onChange}
+                placeholderTextColor="#888"
+              />
+            )}
+          />
 
-      <TouchableOpacity style={FormRegisterAndLogin.button} onPress={handleFinish}>
-        <AppText weight="bold" size={16} color="#fff">Concluir cadastro</AppText>
-      </TouchableOpacity>
-      </View>
-    </ScrollView>
-  </KeyboardAvoidingView>
+          {errors.telefone && <Text style={FormRegisterAndLogin.error}>{errors.telefone.message}</Text>}
+          <Controller
+            control={control}
+            name="telefone"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={FormRegisterAndLogin.input}
+                placeholder="Telefone"
+                value={value}
+                onChangeText={onChange}
+                keyboardType="phone-pad"
+                placeholderTextColor="#888"
+              />
+            )}
+          />
+
+          <AppText weight="bold" size={16} style={{ marginBottom: 8 }}>
+            Gênero
+          </AppText>
+
+          <Controller
+            control={control}
+            name="genero"
+            render={({ field: { onChange, value } }) => (
+              <RadioButton.Group onValueChange={onChange} value={value}>
+                <View style={FormRegisterAndLogin.genderView}>
+                  <View style={FormRegisterAndLogin.genderViewIntern}>
+                    <RadioButton value="Masculino" />
+                    <AppText>Masculino</AppText>
+                  </View>
+
+                  <View style={FormRegisterAndLogin.genderViewIntern}>
+                    <RadioButton value="Feminino" />
+                    <AppText>Feminino</AppText>
+                  </View>
+
+                  <View style={FormRegisterAndLogin.genderViewIntern}>
+                    <RadioButton value="Outro" />
+                    <AppText>Outro</AppText>
+                  </View>
+                </View>
+              </RadioButton.Group>
+            )}
+          />
+
+          <TouchableOpacity style={FormRegisterAndLogin.button} onPress={handleSubmit(onSubmit)}>
+            <AppText weight="bold" size={16} color="#fff">
+              Próximo
+            </AppText>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
