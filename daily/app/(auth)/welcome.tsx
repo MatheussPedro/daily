@@ -18,7 +18,7 @@ export default function Welcome() {
   });
 
   if (!fontsLoaded) return null;
-
+    //ANTES DA TELA DE WELCOME VOU TER QUE CRIAR UMA TELA DE LOGIN, PARA PEGAR OS DADOS DA TABELA USER
   return (
     <View style={styles.container}>
       <Image
