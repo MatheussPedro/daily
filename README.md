@@ -75,3 +75,8 @@ DB_NAME=daily
 ```bash
 npm run dev
 ```
+
+## Rodar a migration do banco
+
+```bash
+npx prisma migrate dev

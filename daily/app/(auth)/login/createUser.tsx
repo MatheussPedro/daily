@@ -1,10 +1,11 @@
 import { AppText } from '@/components/text/appText';
 import { Controller, useForm } from 'react-hook-form';
-import { TextInput, TouchableOpacity, Text, View, KeyboardAvoidingView, ScrollView, Platform, Image } from 'react-native';
+import { TextInput, TouchableOpacity, Text, View, KeyboardAvoidingView, ScrollView, Platform, Image, Alert } from 'react-native';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { router } from 'expo-router';
 import { styles } from './styles/createUsersStyle';
+
 
 const schema = yup.object().shape({
   email: yup.string().required('Informe seu email'),
@@ -19,9 +20,26 @@ export default function Client() {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
-    console.log('Dados enviados:', data);
-    router.push('/(auth)/welcome');
+
+  const onSubmit = async (data: any) => {
+    try{
+      const response = await fetch('http://10.0.0.212:3000/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log('Usuário criado:', result);
+        router.push('/(auth)/welcome');
+      } else {
+        alert(result.error || 'Erro ao criar usuário.');
+      }
+    }catch(error){
+      console.log('Erro ao conectar', error);
+    }
   };
 
   return (
