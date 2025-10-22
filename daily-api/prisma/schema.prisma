@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -16,30 +15,55 @@ datasource db {
 
 model User {
   id        Int        @id @default(autoincrement())
-  nome      String
+  name      String?
   email     String     @unique
-  senha     String
+  pass      String
+  tipo      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  cliente   Cliente
+  cliente   Cliente?
+  diarist   Diarist?
+}
+
+model Diarist {
+  id          Int      @id @default(autoincrement())
+  cpf         String
+  cnpj        String?
+  service     String
+  priceTime   Float
+  experience  Int
+  observation String
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  phones      Phone[]
 }
 
 model Cliente {
-  id        Int      @id @default(autoincrement())
-  tipo      String
-  userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id])
-  endereco  Endereco
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
+  enderecos Endereco[]
+  phones    Phone[]
+}
+
+model Phone {
+  id          Int       @id @default(autoincrement())
+  number      String
+  clienteId   Int?
+  diaristId   Int?
+  cliente     Cliente?  @relation(fields: [clienteId], references: [id])
+  diarist     Diarist?  @relation(fields: [diaristId], references: [id])
 }
 
 model Endereco {
-  id         Int      @id @default(autoincrement())
-  rua        String
-  numero     String
-  bairro     String
-  cidade     String
-  uf         String
-  cep        String
-
-  clienteId  Int      @unique
-  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  id        Int      @id @default(autoincrement())
+  rua       String
+  numero    String
+  bairro    String
+  cidade    String
+  uf        String
+  cep       String
+  clienteId Int
+  cliente   Cliente  @relation(fields: [clienteId], references: [id])
 }
