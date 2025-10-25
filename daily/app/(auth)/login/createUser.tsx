@@ -5,6 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { router } from 'expo-router';
 import { styles } from './styles/createUsersStyle';
+import { useUser } from '@/context/UserContext';
 
 
 const schema = yup.object().shape({
@@ -19,6 +20,7 @@ export default function Client() {
   const { control, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
   });
+  const { setUser } = useUser();
 
 
   const onSubmit = async (data: any) => {
@@ -33,6 +35,10 @@ export default function Client() {
 
       if (response.ok) {
         console.log('Usuário criado:', result);
+        const createdUser = result.user ?? result;
+        if (createdUser && createdUser.id) {
+          setUser({ id: createdUser.id, email: createdUser.email, tipo: createdUser.tipo, name: createdUser.name });
+        }
         router.push('/(auth)/welcome');
       } else {
         alert(result.error || 'Erro ao criar usuário.');

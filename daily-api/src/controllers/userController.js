@@ -37,3 +37,23 @@ export const createUser = async (req, res) => {
     res.status(500).json({ error: 'Erro ao criar usuário.' });
   }
 };
+
+export const updateUsertype = async (req, res) => {
+  try {
+    const { id, tipo } = req.body;
+
+    if (!id || !tipo) {
+      return res.status(400).json({ message: 'ID e tipo são obrigatórios.' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: Number(id) },
+      data: { tipo },
+    });
+
+    res.status(200).json({ message: 'Tipo do usuário atualizado com sucesso.', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao atualizar tipo do usuário.', details: error.message });
+  }
+};

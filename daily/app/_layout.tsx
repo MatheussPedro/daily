@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import { UserProvider } from '../context/UserContext';
 import { StatusBar } from 'expo-status-bar';
 import { CadastroProvider } from '@/context/CadastroContext';
 import 'react-native-reanimated';
@@ -18,6 +19,7 @@ export default function RootLayout() {
   }
 
   return (
+  <UserProvider>
     <CadastroProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack initialRouteName="(auth)">
@@ -28,5 +30,6 @@ export default function RootLayout() {
         <StatusBar style="auto" />
       </ThemeProvider>
     </CadastroProvider>
+  </UserProvider>
   )
 };

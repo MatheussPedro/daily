@@ -15,6 +15,7 @@ import { FormRegisterAndLogin } from '../../styles/FormRegisterAndLogin';
 import { useRegister } from '@/context/ClienteRegisterContext';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useUser } from '@/context/UserContext';
 
 const schema = yup
   .object()
@@ -31,6 +32,7 @@ const schema = yup
 export default function ClientAddres() {
   const router = useRouter();
   const { formData, updateForm } = useRegister();
+  const { user, setUser } = useUser();
 
   const {
     control,
@@ -39,7 +41,7 @@ export default function ClientAddres() {
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      cep: '',
+      cep: (formData as any)?.cep ?? '',
       rua: (formData as any)?.rua ?? '',
       numero: (formData as any)?.numero ?? '',
       bairro: (formData as any)?.bairro ?? '',
@@ -48,12 +50,37 @@ export default function ClientAddres() {
     },
   });
 
-  const onSubmit = (data: any) => {
-    const fullData = { ...formData, ...data };
-    updateForm(fullData);
-    console.log('Dados completos do cliente:', fullData);
+  
+const onSubmit = async () => {
+  if (!user?.id) {
+    console.error('Usuário não encontrado no contexto');
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:3000/users/update-tipo', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: user.id,
+        tipo: 'cliente',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao atualizar o tipo do usuário');
+    }
+
+    const updatedUser = await response.json();
+    setUser(updatedUser.user);
+
+    console.log('Tipo atualizado com sucesso!');
     router.push('/');
-  };
+  } catch (error) {
+    console.error('Erro ao atualizar tipo do usuário:', error);
+  }
+};
+
 
   return (
     <KeyboardAvoidingView

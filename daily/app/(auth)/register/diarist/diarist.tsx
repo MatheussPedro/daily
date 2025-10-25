@@ -7,6 +7,7 @@ import React from 'react';
 import { useCadastro } from '@/context/CadastroContext';
 import { AppText } from '@/components/text/appText';
 import { FormRegisterAndLogin } from '../../styles/FormRegisterAndLogin';
+import { useUser } from '@/context/UserContext';
 
 const opcoesServico = ['Limpeza', 'Passar Roupa', 'Cozinhar'];
 
@@ -36,6 +37,7 @@ cnpj: yup.string().when('typeDoc', {
 export default function DailyComplement() {
   const router = useRouter();
   const { setData } = useCadastro();
+  const { user, setUser } = useUser();
 
   const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm({
     resolver: yupResolver(schema),
@@ -53,10 +55,34 @@ export default function DailyComplement() {
 
   const typeDoc = watch('typeDoc');
 
-  const onSubmit = (formData: any) => {
-    setData(formData);
-    console.log('Dados enviados:', formData);
-    router.push('/(auth)/welcome');
+  const onSubmit = async () => {
+    if (!user?.id) {
+      console.error('Usuário não encontrado no contexto');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/users/update-tipo', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: user.id,
+          tipo: 'diarista',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar o tipo do usuário');
+      }
+
+      const updatedUser = await response.json();
+      setUser(updatedUser.user);
+
+      console.log('Tipo atualizado com sucesso!');
+      router.push('/');
+    } catch (error) {
+      console.error('Erro ao atualizar tipo do usuário:', error);
+    }
   };
 
   return (
